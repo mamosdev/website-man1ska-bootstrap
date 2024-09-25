@@ -1,39 +1,29 @@
 <?php
-  /**
-  * Requires the "PHP Email Form" library
-  * The "PHP Email Form" library is available only in the pro version of the template
-  * The library should be uploaded to: vendor/php-email-form/php-email-form.php
-  * For more info and help: https://bootstrapmade.com/php-email-form/
-  */
 
-  // Replace contact@example.com with your real receiving email address
-  $receiving_email_address = 'contact@example.com';
+// Replace contact@example.com with your real receiving email address
+$receiving_email_address = 'hatma.rosyid@gmail.com';
 
-  if( file_exists($php_email_form = '../assets/vendor/php-email-form/php-email-form.php' )) {
-    include( $php_email_form );
-  } else {
-    die( 'Unable to load the "PHP Email Form" Library!');
-  }
+// Extract email from form (assuming POST method and key "email")
+$email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) : null;
 
-  $contact = new PHP_Email_Form;
-  $contact->ajax = true;
-  
-  $contact->to = $receiving_email_address;
-  $contact->from_name = $_POST['email'];
-  $contact->from_email = $_POST['email'];
-  $contact->subject ="New Subscription: " . $_POST['email'];
+// Validate email address
+if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+  echo 'Invalid email address. Please enter a valid email.';
+  exit;
+}
 
-  // Uncomment below code if you want to use SMTP to send emails. You need to enter your correct SMTP credentials
-  /*
-  $contact->smtp = array(
-    'host' => 'example.com',
-    'username' => 'example',
-    'password' => 'pass',
-    'port' => '587'
-  );
-  */
+$subject = "New Subscription: " . $email;
+$message = "A new subscriber has joined: " . $email;
 
-  $contact->add_message( $_POST['email'], 'Email');
+$headers = "From: $email \r\n";
+$headers .= "Reply-To: $email \r\n";
+$headers .= "Content-Type: text/plain; charset=UTF-8 \r\n";
 
-  echo $contact->send();
+// Send email and handle potential errors
+if (mail($receiving_email_address, $subject, $message, $headers)) {
+  echo 'Subscription Successful!';
+} else {
+  $error = error_get_last();
+  echo 'Error sending subscription. Please try again later. (' . $error['message'] . ')';
+}
 ?>
